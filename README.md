@@ -4,10 +4,36 @@
 
 SQL Server-based persistent memory for OpenClaw agents. Provides semantic memory, task queuing, activity logging, todo management, and hierarchical rollups (daily → weekly → monthly → yearly).
 
+---
+
+## ⚠️ DEPENDENCY PRIORITY
+
+**This skill requires `sql-connector` to be installed first.**
+
+```
+sql-connector  ←  Install this FIRST
+      ↓
+sql-memory     ←  You are here
+      ↓
+sql-dreamer    ←  Install this LAST (optional — uses memories for dream analysis)
+```
+
+```bash
+# Always install in this order:
+clawhub install sql-connector   # transport layer — required
+clawhub install sql-memory      # this skill
+clawhub install sql-dreamer     # optional — dream/analysis layer
+```
+
+If `sql-connector` is not installed, this skill will fail at import with:
+`ImportError: sql_connector.py not found. Install the sql-connector skill first.`
+
+---
+
 ## Requirements
 
 - SQL Server 2019+ (or Azure SQL, site4now, etc.)
-- [clawbot-sql-connector](https://github.com/VeXHarbinger/clawbot-sql-connector) — install first
+- [clawbot-sql-connector](https://github.com/High-Falootin/clawbot-sql-connector) — install first
 - `pymssql` and `python-dotenv`
 
 ## Step 1: Create the Schema
@@ -103,27 +129,29 @@ GO
 
 ## Step 2: Configure .env
 
-Backend configuration uses a simple naming pattern. Add these to your `.env`:
+Backend configuration uses a simple naming pattern. Any identifier works — not just `local` or `cloud`:
 
 ```env
 # Local SQL Server
-SQL_local_server=10.0.0.110
-SQL_local_port=1433
-SQL_local_database=YourDatabase
-SQL_local_user=your_user
-SQL_local_password=your_password
+SQL_LOCAL_SERVER=10.0.0.110
+SQL_LOCAL_PORT=1433
+SQL_LOCAL_DATABASE=your_database_name
+SQL_LOCAL_USER=your_user
+SQL_LOCAL_PASSWORD=your_password
 
 # Cloud SQL Server (Azure / site4now / etc.)
-SQL_cloud_server=yourserver.database.windows.net
-SQL_cloud_port=1433
-SQL_cloud_database=your_cloud_db
-SQL_cloud_user=your_cloud_user
-SQL_cloud_password=your_cloud_password
+SQL_CLOUD_SERVER=yourserver.database.windows.net
+SQL_CLOUD_PORT=1433
+SQL_CLOUD_DATABASE=your_cloud_db
+SQL_CLOUD_USER=your_cloud_user
+SQL_CLOUD_PASSWORD=your_cloud_password
 
-# Add more backends using the same pattern: SQL_<backend>_server, SQL_<backend>_database, etc.
+# Named backends — any identifier works:
+# SQL_TAT_SERVER, SQL_TAT_DATABASE, etc. → get_memory('tat')
+# SQL_HFTC_SERVER, SQL_HFTC_DATABASE, etc. → get_memory('hftc')
 ```
 
-See [clawbot-sql-connector README](https://github.com/VeXHarbinger/clawbot-sql-connector#env-setup) for more details on backend naming.
+See [clawbot-sql-connector README](https://github.com/High-Falootin/clawbot-sql-connector#env-setup) for full backend naming docs.
 
 ## Step 3: Install
 
@@ -137,9 +165,9 @@ clawhub install sql-memory
 ```python
 from sql_memory import SQLMemory, get_memory
 
-mem = get_memory('cloud')   # or 'local'
+mem = get_memory('local')   # or 'cloud', or any named backend
 
-# Store a memory
+# Store a memory (importance 1-10: 3=routine, 7=strategic, 10=permanent)
 mem.remember('facts', 'user_timezone', 'User is in EST/EDT', importance=7, tags='user,prefs')
 
 # Recall it
@@ -162,6 +190,9 @@ mem.complete_todo(todo_id)
 # Connectivity check
 mem.ping()  # → True
 ```
+
+See [GETTING_STARTED.md](GETTING_STARTED.md) for full setup guide.
+See [SKILL_REFERENCE.md](SKILL_REFERENCE.md) for complete API docs.
 
 ## API Reference
 
@@ -219,8 +250,9 @@ Each rollup preserves source references for traceability.
 
 ## Related
 
-- [clawbot-sql-connector](https://github.com/VeXHarbinger/clawbot-sql-connector) — the transport layer this builds on
-- [oblio-heart-and-soul](https://github.com/VeXHarbinger/oblio-heart-and-soul) — full reference implementation
+- [clawbot-sql-connector](https://github.com/High-Falootin/clawbot-sql-connector) — the transport layer this builds on (install first!)
+- [openclaw-SQL-dreamer](https://github.com/High-Falootin/openclaw-SQL-dreamer) — the dream analysis layer built on top of sql-memory
+- [clawhub.ai](https://clawhub.ai) — install with `clawhub install sql-memory`
 
 ## Community
 
